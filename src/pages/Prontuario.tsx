@@ -37,7 +37,6 @@ export function Prontuario() {
   const [equipeClinica, setEquipeClinica] = useState<any[]>([]); 
   const [loadingAgendamento, setLoadingAgendamento] = useState(false);
 
-  // ESTADO DO FORMULÁRIO ATUALIZADO COM FINANCEIRO
   const [formAgendamento, setFormAgendamento] = useState({ 
     profissional: '', 
     sala: '1', 
@@ -58,14 +57,29 @@ export function Prontuario() {
     return prof?.cor || "#1e3a8a";
   };
 
+  // CARREGAR DADOS - CORREÇÃO DO ERRO 400
   const carregarDados = async () => {
+    if (!id) return;
     try {
       setLoading(true);
-      const { data: p } = await supabase.from("pacientes").select("*").eq("id", id).single();
+      
+      // Busca paciente garantindo que o ID seja tratado corretamente
+      const { data: p, error: pError } = await supabase
+        .from("pacientes")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (pError) throw pError;
       setPaciente(p);
       
       if (p) {
-        const { data: ag } = await supabase.from("agendamentos").select("status").eq("paciente_nome", p.nome);
+        // Busca agendamentos para o resumo
+        const { data: ag } = await supabase
+          .from("agendamentos")
+          .select("status")
+          .eq("paciente_id", id);
+
         if (ag) {
           setResumoPresenca({
             presencas: ag.filter(a => a.status === 'Presenca' || a.status === 'Presença').length,
@@ -74,7 +88,12 @@ export function Prontuario() {
         }
       }
 
-      const { data: r } = await supabase.from("prontuarios").select("*").eq("paciente_id", id).order("created_at", { ascending: false });
+      const { data: r } = await supabase
+        .from("prontuarios")
+        .select("*")
+        .eq("paciente_id", id)
+        .order("created_at", { ascending: false });
+      
       setRegistros(r || []);
 
       const { data: todosPerfis } = await supabase.from('perfis').select('*').order('nome');
@@ -87,7 +106,12 @@ export function Prontuario() {
         });
         setEquipeClinica(filtrados);
       }
-    } catch (e) { console.error(e); } finally { setLoading(false); }
+    } catch (e) { 
+      console.error("Erro Supabase:", e);
+      toast.error("Erro ao carregar dados do paciente.");
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   useEffect(() => { carregarDados(); }, [id]);
@@ -156,7 +180,6 @@ export function Prontuario() {
     } catch (error) { toast.error("Erro ao salvar."); } finally { setLoading(false); }
   };
 
-  // FUNÇÃO DE AGENDAMENTO ATUALIZADA
   const handleSalvarAgendamento = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formAgendamento.profissional) return toast.error("Selecione o profissional.");
@@ -187,6 +210,35 @@ export function Prontuario() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-10 font-sans text-left">
+      <style>{`
+        /* OUTRAS VISUALIZAÇÕES: FUNDO AZUL */
+        .rbc-month-view, .rbc-time-view { 
+          background-color: #1e3a8a !important; 
+          color: white !important;
+          border-radius: 1.5rem; overflow: hidden; border: none !important;
+        }
+        .rbc-header { color: white !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+
+        /* AGENDA: FUNDO BRANCO E LETRAS AZUIS */
+        .rbc-agenda-view { 
+          background-color: white !important; 
+          border-radius: 1.5rem !important; overflow: hidden !important; 
+        }
+        .rbc-agenda-view table.rbc-agenda-table thead > tr > th { 
+          background-color: #1e3a8a !important; 
+          color: white !important; 
+          font-weight: 900 !important; 
+          text-transform: uppercase !important;
+          padding: 16px !important;
+        }
+        .rbc-agenda-view table.rbc-agenda-table tbody > tr > td { 
+          color: #1e3a8a !important; 
+          font-weight: bold !important; 
+          background-color: white !important;
+          border-bottom: 1px solid #f1f5f9 !important;
+        }
+      `}</style>
+
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* HEADER */}
@@ -227,7 +279,7 @@ export function Prontuario() {
           </div>
         </div>
 
-        {/* ÁREA DE PRONTUÁRIO E REGISTROS */}
+        {/* ÁREA DE PRONTUÁRIO */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
           <div className="lg:col-span-1">
             <Card className={`border-none shadow-lg rounded-[2rem] overflow-hidden ${modoEdicao ? 'ring-4 ring-amber-400' : ''}`}>
@@ -284,7 +336,7 @@ export function Prontuario() {
           </div>
         </div>
 
-        {/* MODAL DE AGENDAMENTO (CORRIGIDO) */}
+        {/* MODAL DE AGENDAMENTO (PADRÃO 420px) */}
         {isAgendamentoOpen && (
           <div className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center p-4 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && setIsAgendamentoOpen(false)}>
             <Card className="w-full max-w-[420px] rounded-[2.5rem] bg-white overflow-visible shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -318,7 +370,7 @@ export function Prontuario() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Valor da Sessão</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Valor Sessão</label>
                     <Input type="number" step="0.01" value={formAgendamento.valor_atendimento} onChange={e => setFormAgendamento({...formAgendamento, valor_atendimento: e.target.value})} className="bg-gray-50 border-none h-10 font-bold text-sm" />
                   </div>
                   <div className="space-y-1">
