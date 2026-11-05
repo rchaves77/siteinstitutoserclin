@@ -33,25 +33,48 @@ const WHATSAPP_NUMBER = "5568992161717";
 const PAGE_TITLE =
   "Avaliação Neuropsicológica em Rio Branco (AC) | Instituto SerClin";
 const PAGE_DESCRIPTION =
-  "Avaliação neuropsicológica em Rio Branco (AC): relatório prévio em 15 dias e laudo em até 30 dias. Profissional formada na USP-SP, +10 anos. Agende no WhatsApp.";
+  "Avaliação neuropsicológica em Rio Branco (AC): laudo em até 30 dias após os testes. Profissional formada na USP-SP, +10 anos. Agende no WhatsApp.";
 
 /* CONFIRMAR: estimativa conservadora (cálculo: 25 laudos/mês x ~11 meses
    ativos x 10 anos = ~2.750). Troque pelo número real do sistema quando tiver. */
 const AUTHORITY_STATS = [
   { value: "+10 anos", label: "de avaliação neuropsicológica" },
   { value: "+2.500", label: "avaliações realizadas" },
-  { value: "15 dias", label: "relatório prévio" },
-  { value: "30 dias", label: "laudo completo" },
+  { value: "48h", label: "para o acolhimento" },
+  { value: "30 dias", label: "para o laudo, após os testes" },
 ];
 
 /* PROVA SOCIAL — avaliações públicas do Perfil de Empresa no Google.
    Cole abaixo texto e primeiro nome reais. Se a lista ficar vazia,
    a seção some da página (nada é inventado). */
 const GOOGLE_REVIEWS_URL = ""; // link do perfil no Google
-const GOOGLE_RATING = ""; // ex.: "5,0"
-const GOOGLE_REVIEW_COUNT = ""; // ex.: "48"
+const GOOGLE_RATING = "5,0"; // todas as avaliações do perfil são 5 estrelas (conferido em 05/11/2026)
+const GOOGLE_REVIEW_COUNT = "mais de 25"; // faixa segura: o perfil tinha 27 avaliações
 type Testimonial = { text: string; author: string };
-const TESTIMONIALS: Testimonial[] = [];
+const TESTIMONIALS: Testimonial[] = [
+  {
+    text: "Ótimos profissionais, atendimento humanizado, laudos bem detalhados",
+    author: "Mariano S.",
+  },
+  {
+    text: "Fui muito bem recebida, meu filho amou a doutora Helenara, foi muito gentil com ele. Uma ótima profissional, voltarei outras vezes.",
+    author: "Randélia S.",
+  },
+  {
+    text: "Ótimo atendimento e profissionalismo de alto nível",
+    author: "Widisney O.",
+  },
+];
+
+/* PLANO PÓS-LAUDO — assinatura para quem conclui a avaliação.
+   Preencha quando a oferta estiver definida; enquanto for null, a seção some. */
+type PostEvaluationPlan = {
+  title: string;
+  text: string;
+  cta: string;
+  whatsappMessage: string;
+};
+const POST_EVALUATION_PLAN = null as PostEvaluationPlan | null;
 
 /* =====================================================================
    COPY
@@ -95,7 +118,7 @@ const USE_CASES = [
 const STEPS = [
   {
     title: "Conversa inicial",
-    text: "Você chama no WhatsApp. Explicamos o processo e marcamos o primeiro passo.",
+    text: "Você chama no WhatsApp. Acolhemos em até 48h, explicamos o processo e marcamos o primeiro passo.",
   },
   {
     title: "Entrevista",
@@ -106,14 +129,9 @@ const STEPS = [
     text: "Sessões com testes e atividades adequados à idade de quem é avaliado.",
   },
   {
-    title: "Relatório prévio",
-    text: "Em até 15 dias você recebe os principais achados e já sabe os próximos passos.",
-    deadline: "Em até 15 dias",
-  },
-  {
     title: "Devolutiva e laudo",
-    text: "Explicamos tudo em linguagem simples. O laudo completo sai em até 30 dias.",
-    deadline: "Em até 30 dias",
+    text: "Explicamos tudo em linguagem simples. O laudo completo sai em até 30 dias depois das sessões de testes.",
+    deadline: "Em até 30 dias após os testes",
   },
 ];
 
@@ -144,12 +162,12 @@ const FAQ_ITEMS = [
   {
     question: "Em quanto tempo recebo o resultado?",
     answer:
-      "Você recebe um relatório prévio em até 15 dias e o laudo completo em até 30 dias.",
+      "O laudo completo sai em até 30 dias depois das sessões de testes. O acolhimento inicial, depois do seu contato, acontece em até 48h.",
   },
   {
-    question: "Qual a diferença entre o relatório prévio e o laudo?",
+    question: "O que é a devolutiva?",
     answer:
-      "O relatório prévio traz os principais achados, para você entender o cenário logo. O laudo é o documento completo e final, com as conclusões e as orientações.",
+      "É a conversa em que explicamos os resultados em linguagem simples e tiramos suas dúvidas.",
   },
   {
     question: "Para quais idades a avaliação serve?",
@@ -182,9 +200,9 @@ const FAQ_ITEMS = [
       "Na devolutiva, explicamos os resultados em linguagem simples. Se precisar de acompanhamento, o Instituto tem psicoterapia e psicopedagogia, e encaminhamos para psiquiatria parceira quando o caso pede.",
   },
   {
-    question: "Como funciona o atendimento prioritário?",
+    question: "Em quanto tempo vocês respondem?",
     answer:
-      "Membros do Club SerClin têm atendimento prioritário em até 48h. Pergunte no WhatsApp como entrar.",
+      "Depois do seu contato no WhatsApp, o acolhimento acontece em até 48h.",
   },
 ];
 
@@ -346,8 +364,8 @@ export default function AvaliacaoNeuropsicologica() {
             </h1>
             <p className="mx-auto mb-8 max-w-2xl text-lg font-light text-white/90 md:text-xl">
               Descubra como você ou seu filho pensa, aprende e se comporta.
-              Receba um <strong className="font-bold">relatório prévio em 15 dias</strong>{" "}
-              e comece a agir cedo.
+              <strong className="font-bold">Laudo em até 30 dias</strong> depois
+              das sessões de testes.
             </p>
 
             <WhatsAppButton
@@ -355,7 +373,7 @@ export default function AvaliacaoNeuropsicologica() {
               message="Olá! Quero agendar uma avaliação neuropsicológica no Instituto SerClin."
             />
             <p className="mt-4 text-sm text-white/70">
-              Membros do Club SerClin têm atendimento prioritário em até 48h.
+              Acolhimento em até 48h depois do seu contato.
             </p>
 
             <AuthorityLine className="mt-8 text-white/80" />
@@ -453,13 +471,11 @@ export default function AvaliacaoNeuropsicologica() {
         </section>
 
         {/* 4. COMO FUNCIONA — 5 etapas com prazos */}
-        {/* CONFIRMAR: os prazos de 15 e 30 dias contam a partir de qual ponto?
-            (início da avaliação ou fim das sessões de testes). Ajuste o texto se precisar. */}
         <section id="como-funciona" className="neuro-steps bg-primary px-4 py-16 text-white md:py-24">
           <div className="container mx-auto">
             <SectionHeading
               eyebrow="Como funciona"
-              title="Cinco passos, sem surpresa e com prazo."
+              title="Quatro passos, sem surpresa e com prazo."
             />
 
             <ol className="mx-auto max-w-3xl space-y-4">
@@ -589,23 +605,24 @@ export default function AvaliacaoNeuropsicologica() {
           </section>
         )}
 
-        {/* 7. PRIORIDADE — Club SerClin */}
-        <section id="prioridade" className="neuro-priority bg-secondary/20 px-4 py-14 md:py-16">
-          <div className="container mx-auto max-w-3xl text-center">
-            <h2 className="mb-3 font-serif text-2xl font-bold text-primary md:text-3xl">
-              Precisa de resposta mais rápido?
-            </h2>
-            <p className="mb-6 text-base leading-relaxed text-foreground md:text-lg">
-              Membros do <strong>Club SerClin</strong> têm atendimento prioritário
-              em até <strong>48h</strong>. Pergunte como entrar.
-            </p>
-            <WhatsAppButton
-              label="Quero atendimento prioritário"
-              message="Olá! Quero saber como entrar no Club SerClin e ter atendimento prioritário na avaliação neuropsicológica."
-              className="bg-primary text-white hover:bg-primary/90"
-            />
-          </div>
-        </section>
+        {/* 7. PRÓXIMO PASSO APÓS O LAUDO — só aparece quando POST_EVALUATION_PLAN for preenchido */}
+        {POST_EVALUATION_PLAN && (
+          <section id="depois-do-laudo" className="neuro-next-step bg-secondary/20 px-4 py-14 md:py-16">
+            <div className="container mx-auto max-w-3xl text-center">
+              <h2 className="mb-3 font-serif text-2xl font-bold text-primary md:text-3xl">
+                {POST_EVALUATION_PLAN.title}
+              </h2>
+              <p className="mb-6 text-base leading-relaxed text-foreground md:text-lg">
+                {POST_EVALUATION_PLAN.text}
+              </p>
+              <WhatsAppButton
+                label={POST_EVALUATION_PLAN.cta}
+                message={POST_EVALUATION_PLAN.whatsappMessage}
+                className="bg-primary text-white hover:bg-primary/90"
+              />
+            </div>
+          </section>
+        )}
 
         {/* 8. FAQ — objeções, sem preço */}
         <section id="duvidas" className="neuro-faq bg-white px-4 py-16 md:py-24">
@@ -639,7 +656,7 @@ export default function AvaliacaoNeuropsicologica() {
             </h2>
             <p className="mx-auto mb-8 max-w-xl text-lg font-light text-white/90">
               Chame no WhatsApp e receba orientação sobre como agendar a
-              avaliação. Relatório prévio em 15 dias, laudo em até 30.
+              avaliação. Acolhimento em até 48h, laudo em até 30 dias depois dos testes.
             </p>
             <WhatsAppButton
               label="Agendar minha avaliação no WhatsApp"
